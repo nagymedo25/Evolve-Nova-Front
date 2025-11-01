@@ -20,6 +20,9 @@ export const getCourseById = (courseId) => apiClient.get(`/courses/${courseId}`)
 export const getCourseLessons = (courseId) => apiClient.get(`/courses/${courseId}/lessons`);
 export const getLessonById = (courseId, lessonId) => apiClient.get(`/courses/${courseId}/lessons/${lessonId}`); 
 
+export const getCourseReviews = (courseId) => apiClient.get(`/courses/${courseId}/reviews`);
+export const submitReview = (courseId, reviewData) => apiClient.post(`/courses/${courseId}/reviews`, reviewData);
+
 export const getMyPayments = () => apiClient.get('/payments/my-payments');
 export const submitPayment = (formData) => apiClient.post('/payments', formData, {
     headers: {

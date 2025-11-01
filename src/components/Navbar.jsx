@@ -134,7 +134,7 @@ function Navbar({ showBackButton = false, CourcePage = false, showThemeToggle = 
   return (
     <header className="navbar">
       <Link to="/" onClick={closeMenu}>
-        <img src="/images/12.png" alt="logo" className="logo" />
+        <img src="/images/NavLogo.png" alt="logo" className="logo" />
       </Link>
 
       <button className={`hamburger ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>

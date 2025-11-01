@@ -23,6 +23,7 @@ function EvolvePage() {
         description={aboutData.description}
         mission={aboutData.mission}
         vision={aboutData.vision}
+        Massage={aboutData.Massage}
         showVideo={true}
       />
       <Events events={eventsData} />

@@ -64,6 +64,7 @@
 
 .auth-form .form-group {
   margin-bottom: 1.5rem;
+  text-align: right; /* ✨ إضافة: لضمان محاذاة كل شيء لليمين */
 }
 
 .auth-form input {
@@ -85,6 +86,61 @@
   box-shadow: 0 0 0 3px rgba(241, 140, 126, 0.1);
   background-color: #111111;
 }
+
+/* --- ✨ كود جديد: تنسيق حقل الإدخال الخاطئ --- */
+.auth-form input.invalid {
+  border-color: #d8000c !important;
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1) !important;
+}
+/* --- نهاية الكود الجديد --- */
+
+
+/* --- ✨ كود جديد: تنسيق رسالة الخطأ تحت الحقل --- */
+.field-error {
+  color: #d8000c;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  text-align: right;
+  animation: fadeIn 0.3s;
+}
+/* --- نهاية الكود الجديد --- */
+
+
+/* --- ✨ كود جديد: تنسيق قائمة متطلبات كلمة المرور --- */
+.auth-requirements {
+  list-style: none;
+  padding: 0;
+  margin: -0.5rem 0 1.5rem 0;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.auth-requirements li {
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.auth-requirements li.valid {
+  color: #4CAF50; /* أخضر */
+  opacity: 1;
+}
+
+.auth-requirements li.valid i {
+  margin-left: 5px;
+}
+
+.auth-requirements li.invalid {
+  color: #d8000c; /* أحمر */
+  opacity: 1;
+}
+
+.auth-requirements li i {
+  margin-left: 5px; /* أيقونة بجوار النص */
+}
+/* --- نهاية الكود الجديد --- */
+
 
 .auth-submit-btn {
   width: 100%;

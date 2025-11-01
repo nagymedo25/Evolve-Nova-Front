@@ -1,6 +1,6 @@
 import './About.css'
 
-function About({ image, title, description, mission, vision, showVideo = true }) {
+function About({ image, title, description, mission, vision, Massage , showVideo = true }) {
   return (
     <>
       <div className="section" id="about"></div>
@@ -22,6 +22,11 @@ function About({ image, title, description, mission, vision, showVideo = true })
             <div className="about-card">
               <div className="card-title"><i className="fas fa-eye"></i> رؤيتنا</div>
               <p>{vision}</p>
+            </div>
+
+            <div className="about-card">
+              <div className="card-title"><i className="fas fa-eye"></i> رسالتنا</div>
+              <p>{Massage}</p>
             </div>
 
             <div className="about-card">

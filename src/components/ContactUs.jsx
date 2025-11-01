@@ -44,13 +44,13 @@ function ContactUs() {
               <div className="info-card">
                 <div className="info-icon">📧</div>
                 <h3>البريد الإلكتروني</h3>
-                <p>info@evolvegroup.com</p>
+                <p>evolve881gmail.com</p>
               </div>
 
               <div className="info-card">
                 <div className="info-icon">📱</div>
                 <h3>الهاتف</h3>
-                <p dir="ltr">+20 123 456 7890</p>
+                <p dir="ltr">+20 10 13712125</p>
               </div>
 
 
@@ -58,10 +58,10 @@ function ContactUs() {
                 <div className="info-icon">🌐</div>
                 <h3>وسائل التواصل</h3>
                 <div className="social-links">
-                  <a href="#" className="social-link">Facebook</a>
-                  <a href="#" className="social-link">Twitter</a>
-                  <a href="#" className="social-link">LinkedIn</a>
-                  <a href="#" className="social-link">Instagram</a>
+                  <a target='_blank' href="https://www.facebook.com/share/1AJ286uMMu/" className="social-link">Facebook</a>
+                  <a target='_blank' href="https://www.tiktok.com/@evolve.group?_t=ZS-90qbkN2rWWz&_r=1" className="social-link">TikTok</a>
+                  <a target='_blank' href="https://www.linkedin.com/company/evolve-group%E2%80%8F/" className="social-link">LinkedIn</a>
+                  <a target='_blank' href="https://www.instagram.com/evolve___group?igsh=NjZ1eXIzdzZxNmNj" className="social-link">Instagram</a>
                 </div>
               </div>
             </div>

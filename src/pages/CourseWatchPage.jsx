@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { getCourseById, getCourseLessons } from '../services/api'; // استيراد دوال API
-import { useAuth } from '../context/AuthContext'; // استيراد useAuth
+import { getCourseById, getCourseLessons } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
+// لا حاجة لـ ReactPlayer
 import './CourseWatchPage.css';
 
-// مكونات التحميل والخطأ يمكن إعادة استخدامها من CourseDetailsPage أو تعريفها هنا
 const LoadingSpinner = () => (
     <div style={{ textAlign: 'center', padding: '3rem', fontSize: '1.5rem', color: 'var(--text-secondary)' }}>
         جارِ التحميل...
@@ -19,29 +19,27 @@ const ErrorDisplay = ({ message }) => (
 );
 
 function CourseWatchPage() {
-  const { id: courseId } = useParams(); // courseId من المسار
-  const location = useLocation(); // للحصول على lessonId المحتمل من الحالة
+  const { id: courseId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth(); // بيانات المستخدم وحالة المصادقة
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [currentLesson, setCurrentLesson] = useState(null);
-  const [completedLessons, setCompletedLessons] = useState([]); // سنحتاج لتخزين هذا في الباك اند لاحقاً
+  const [completedLessons, setCompletedLessons] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState('');
-  const [showReviews, setShowReviews] = useState(false); // ستبقى كما هي
-  const [showCertificate, setShowCertificate] = useState(false); // ستبقى كما هي
+  const [showReviews, setShowReviews] = useState(false);
 
-  // State local for dummy video progress simulation for now
+  // إعادة تفعيل المحاكاة بالوقت
   const [videoWatchedPercent, setVideoWatchedPercent] = useState(0);
   const videoEndTimerRef = useRef(null);
 
 
-  // جلب بيانات الكورس والدروس معاً
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading) return; // انتظار تحميل حالة المصادقة
+      if (authLoading) return;
 
       setIsLoadingData(true);
       setError('');
@@ -52,13 +50,11 @@ function CourseWatchPage() {
       if (!isAuthenticated) {
           setError("يجب تسجيل الدخول لمشاهدة الكورس.");
           setIsLoadingData(false);
-          // توجيه لصفحة الدخول بعد فترة قصيرة
           setTimeout(() => navigate('/login', { state: { from: location.pathname } }), 1500);
           return;
       }
 
       try {
-        // جلب بيانات الكورس أولاً
         const courseResponse = await getCourseById(courseId);
         const fetchedCourse = courseResponse.data.course;
         setCourse(fetchedCourse || null);
@@ -67,24 +63,24 @@ function CourseWatchPage() {
             throw new Error("الكورس غير موجود.");
         }
 
-        // جلب قائمة الدروس (المفروض أن تشمل حالة الوصول is_accessible)
         const lessonsResponse = await getCourseLessons(courseId);
         const fetchedLessons = lessonsResponse.data.lessons || [];
         setLessons(fetchedLessons);
+        
+        const fetchedCompleted = []; // مؤقتاً
+        setCompletedLessons(fetchedCompleted);
 
-        // تحديد الدرس الحالي
-        const initialLessonId = location.state?.lessonId; // الدرس الذي تم النقر عليه
+
+        const initialLessonId = location.state?.lessonId;
         let lessonToSet = null;
         if (initialLessonId) {
             lessonToSet = fetchedLessons.find(l => l.lesson_id === initialLessonId && l.is_accessible);
         }
-        // إذا لم يتم العثور عليه أو لم يتم تمريره، اعرض أول درس متاح
         if (!lessonToSet) {
              lessonToSet = fetchedLessons.find(l => l.is_accessible);
         }
-        // إذا لم يكن هناك أي درس متاح (حالة نادرة جداً لكورس مسجل فيه)
         if (!lessonToSet && fetchedLessons.length > 0) {
-            lessonToSet = fetchedLessons[0]; // عرض الأول حتى لو مقفل مع رسالة
+            lessonToSet = fetchedLessons[0];
         }
 
         setCurrentLesson(lessonToSet);
@@ -94,12 +90,6 @@ function CourseWatchPage() {
          } else if (lessonToSet && !lessonToSet.is_accessible && user?.role !== 'admin') {
               setError("ليس لديك صلاحية الوصول لهذا الدرس. تأكد من إتمام الدفع أو تواصل مع الدعم.");
          }
-
-
-        // TODO: جلب حالة إكمال الدروس من الباك اند لاحقاً
-        // const progressResponse = await api.getCourseProgress(courseId);
-        // setCompletedLessons(progressResponse.data.completed || []);
-
 
       } catch (err) {
         console.error("Failed to load course/lessons:", err);
@@ -111,7 +101,6 @@ function CourseWatchPage() {
          else {
             setError(err.response?.data?.error || err.message || 'فشل تحميل بيانات الكورس.');
          }
-
         setCourse(null);
         setLessons([]);
         setCurrentLesson(null);
@@ -121,34 +110,32 @@ function CourseWatchPage() {
     };
 
     fetchData();
-  }, [courseId, isAuthenticated, authLoading, navigate, location.state]); // الاعتماديات
+  }, [courseId, isAuthenticated, authLoading, navigate, location.state]);
 
 
- // Dummy effect to simulate video watching for mark complete button enable/disable
- useEffect(() => {
-     setVideoWatchedPercent(0); // Reset on lesson change
+  // إعادة تفعيل مؤقت محاكاة مشاهدة الفيديو
+  useEffect(() => {
+     setVideoWatchedPercent(0); // إعادة تعيين عند تغيير الدرس
      if (videoEndTimerRef.current) clearTimeout(videoEndTimerRef.current);
+     
      if (currentLesson && !completedLessons.includes(currentLesson.lesson_id)) {
-        // Simulate watching 90%
-        const lessonDuration = parseInt(currentLesson.duration?.split(':')[0] || '1', 10) * 60 * 1000; // Rough duration in ms
-        const watchTime = lessonDuration * 0.9 || 30000; // 90% or 30s fallback
+        // محاكاة وقت المشاهدة (5 ثواني كمثال)
         videoEndTimerRef.current = setTimeout(() => {
-            setVideoWatchedPercent(100); // Simulate watched
-        }, Math.max(watchTime, 5000)); // Minimum 5 seconds
+            setVideoWatchedPercent(100); // محاكاة اكتمال المشاهدة
+        }, 5000); // 5 ثواني
      } else if (currentLesson && completedLessons.includes(currentLesson.lesson_id)){
-         setVideoWatchedPercent(100); // Already completed
+         setVideoWatchedPercent(100); // مكتمل بالفعل
      }
 
      return () => clearTimeout(videoEndTimerRef.current);
 
- }, [currentLesson, completedLessons]);
+  }, [currentLesson, completedLessons]);
 
 
   const handleLessonClick = (lesson) => {
     if (lesson.is_accessible) {
       setCurrentLesson(lesson);
-      setShowCertificate(false); // إخفاء الشهادة عند التنقل
-      setError(''); // مسح أي خطأ وصول سابق
+      setError('');
     } else {
         setError("هذا الدرس غير متاح لك حالياً.");
     }
@@ -160,17 +147,11 @@ function CourseWatchPage() {
       setCompletedLessons(newCompleted);
 
       // TODO: إرسال تحديث الإكمال للباك اند لاحقاً
-      // api.markLessonComplete(courseId, currentLesson.lesson_id);
 
-      // التحقق من إكمال الكورس
       if (newCompleted.length === lessons.length) {
-        setTimeout(() => {
-          // يمكن عرض رسالة تأكيد هنا قبل عرض الشهادة
-           setShowCertificate(true); // عرض الشهادة مباشرة
-        }, 500);
+        console.log("Course completed!");
       } else {
-          // الانتقال التلقائي للدرس التالي بعد وضع علامة الإكمال
-          handleNextLesson(true); // Pass true to force move even if current wasn't last
+          handleNextLesson(true);
       }
     }
   };
@@ -181,50 +162,39 @@ function CourseWatchPage() {
     const currentIndex = lessons.findIndex(l => l.lesson_id === currentLesson?.lesson_id);
 
     if (currentIndex < lessons.length - 1) {
-        // ابحث عن الدرس التالي المتاح
         let nextLessonIndex = currentIndex + 1;
         while(nextLessonIndex < lessons.length && !lessons[nextLessonIndex].is_accessible) {
             nextLessonIndex++;
         }
 
         if (nextLessonIndex < lessons.length) {
-             // وضع علامة كمكتمل للدرس الحالي إذا لم يكن مكتملاً وانتقلنا
             if (currentLesson && !completedLessons.includes(currentLesson.lesson_id) && !forceMoveNext) {
                 setCompletedLessons([...completedLessons, currentLesson.lesson_id]);
-                 // TODO: Send to backend later
             }
-            setCurrentLesson(lessons[nextLessonIndex]);
+            const nextLesson = lessons[nextLessonIndex];
+            setCurrentLesson(nextLesson);
         } else {
-            console.log("No more accessible lessons after this one.");
-             // إذا لم يعد هناك دروس متاحة، تحقق من إكمال الكورس
              if (currentLesson && !completedLessons.includes(currentLesson.lesson_id)) {
                  const finalCompleted = [...completedLessons, currentLesson.lesson_id];
                  setCompletedLessons(finalCompleted);
                  if (finalCompleted.length === lessons.length) {
-                     setShowCertificate(true);
+                     // اكتمل الكورس
                  }
              }
         }
     } else if (currentLesson && !completedLessons.includes(currentLesson.lesson_id)) {
-        // هذا هو الدرس الأخير ولم يكتمل بعد
          const finalCompleted = [...completedLessons, currentLesson.lesson_id];
          setCompletedLessons(finalCompleted);
          if (finalCompleted.length === lessons.length) {
-             setShowCertificate(true); // اكتمل الكورس
+             // اكتمل الكورس
          }
-    } else if (currentIndex === lessons.length -1 && !showCertificate) {
-         // هو الأخير ومكتمل، اعرض الشهادة
-         setShowCertificate(true);
     }
   };
 
 
-  // حساب التقدم بناءً على الحالة المحلية (سيتم تحديثه لاحقاً)
   const progress = lessons.length > 0 ? (completedLessons.length / lessons.length) * 100 : 0;
   const isCompleted = lessons.length > 0 && completedLessons.length === lessons.length;
 
-
- // ----- عرض التحميل والخطأ العام -----
   if (isLoadingData || authLoading) {
     return (
       <div className="course-watch-page">
@@ -249,7 +219,6 @@ function CourseWatchPage() {
   }
 
    if (!course || !currentLesson) {
-     // حالة عدم وجود كورس أو عدم القدرة على تحديد درس حالي (قد يكون الكورس فارغاً)
      return (
        <div className="course-watch-page">
          <Navbar showBackButton={true} CourcePage={true} isDark={true} />
@@ -261,8 +230,6 @@ function CourseWatchPage() {
      );
    }
 
-
-  // ----- عرض محتوى الصفحة -----
   return (
     <div className="course-watch-page">
       <Navbar showBackButton={true} CourcePage={true} isDark={true} />
@@ -279,11 +246,10 @@ function CourseWatchPage() {
         <div className="video-section">
            {currentLesson.video_url ? (
                <div className="video-player">
+                 {/* --- العودة إلى IFRAME --- */}
                  <iframe
-                   // Use lesson_id in key to force re-render on lesson change
                    key={currentLesson.lesson_id}
-                   // استخدام video_url
-                   src={`${currentLesson.video_url}${currentLesson.video_url.includes('?') ? '&' : '?'}enablejsapi=1&autoplay=1`} // Added autoplay=1
+                   src={currentLesson.video_url}
                    title={currentLesson.title}
                    frameBorder="0"
                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -303,7 +269,7 @@ function CourseWatchPage() {
               <button
                 className="complete-btn"
                 onClick={handleMarkComplete}
-                // تفعيل الزر إذا اكتملت المشاهدة (محاكاة) ولم يكن الدرس مكتملاً بالفعل
+                // استخدام الحالة القديمة المبنية على الوقت
                 disabled={videoWatchedPercent < 100 || completedLessons.includes(currentLesson.lesson_id)}
               >
                 {completedLessons.includes(currentLesson.lesson_id) ? '✓ مكتمل' : 'وضع علامة كمكتمل'}
@@ -311,31 +277,16 @@ function CourseWatchPage() {
               <button className="next-btn" onClick={() => handleNextLesson(false)}>
                 الدرس التالي →
               </button>
-              {isCompleted && (
-                <button
-                  className="certificate-btn"
-                  onClick={() => setShowCertificate(true)}
-                >
-                  🎓 عرض الشهادة
-                </button>
-              )}
             </div>
           </div>
 
           <div className="lesson-tabs">
-            {/* Tabs تبقى كما هي */}
             <button
               className={`lesson-tab ${!showReviews ? 'active' : ''}`}
               onClick={() => setShowReviews(false)}
             >
               عن الدرس
             </button>
-            {/* <button
-              className={`lesson-tab ${showReviews ? 'active' : ''}`}
-              onClick={() => setShowReviews(true)}
-            >
-              التقييمات
-            </button> */}
           </div>
 
           <div className="lesson-tab-content">
@@ -351,7 +302,6 @@ function CourseWatchPage() {
             ) : (
                <div className="reviews-section">
                  <h3>التقييمات ({course.reviews_count || 0})</h3>
-                 {/* منطق جلب وعرض التقييمات سيضاف لاحقاً */}
                   <p>سيتم عرض التقييمات هنا قريباً.</p>
                </div>
             )}
@@ -369,7 +319,7 @@ function CourseWatchPage() {
               <div
                 key={lesson.lesson_id}
                 className={`playlist-item ${currentLesson?.lesson_id === lesson.lesson_id ? 'active' : ''} ${completedLessons.includes(lesson.lesson_id) ? 'completed' : ''} ${!lesson.is_accessible ? 'locked' : ''}`}
-                onClick={() => handleLessonClick(lesson)} // استخدام الدالة المحدثة
+                onClick={() => handleLessonClick(lesson)}
                 title={!lesson.is_accessible ? "هذا الدرس غير متاح لك" : lesson.title}
               >
                 <div className="playlist-number">{index + 1}</div>
@@ -390,7 +340,6 @@ function CourseWatchPage() {
         </div>
       </div>
 
-       {/* قسم الأسئلة الشائعة يبقى كما هو */}
        <div className="course-faq-section">
          <h2>الأسئلة الشائعة</h2>
          <div className="faq-grid">
@@ -404,51 +353,6 @@ function CourseWatchPage() {
          </div>
        </div>
 
-
-       {/* قسم الشهادة يعتمد على اسم المستخدم من useAuth */}
-      {showCertificate && (
-        <div className="certificate-section" id="certificate">
-          <div className="certificate-container">
-            <div className="certificate-border">
-              <div className="certificate-content">
-                <div className="certificate-logo">🎓</div>
-                <h1 className="certificate-title">شهادة إتمام الكورس</h1>
-                <div className="certificate-divider"></div>
-
-                <p className="certificate-text">هذه الشهادة تُمنح إلى</p>
-                {/* استخدام اسم المستخدم من useAuth */}
-                <h2 className="certificate-name">{user?.name || 'الطالب'}</h2>
-
-                <p className="certificate-text">لإكماله بنجاح كورس</p>
-                <h3 className="certificate-course">{course.title}</h3>
-
-                <div className="certificate-details">
-                  <div className="certificate-detail">
-                    <span className="detail-label">المدرب:</span>
-                    <span className="detail-value">{course.instructor || 'غير محدد'}</span>
-                  </div>
-                  <div className="certificate-detail">
-                    <span className="detail-label">المدة:</span>
-                    <span className="detail-value">{course.duration || 'غير محدد'}</span>
-                  </div>
-                  <div className="certificate-detail">
-                    <span className="detail-label">التاريخ:</span>
-                    <span className="detail-value">{new Date().toLocaleDateString('ar-EG')}</span>
-                  </div>
-                </div>
-
-                <div className="certificate-footer">
-                  <div className="certificate-signature">
-                    <div className="signature-line"></div>
-                    <p>Evolve Group</p>
-                  </div>
-                  <div className="certificate-seal">✓</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
